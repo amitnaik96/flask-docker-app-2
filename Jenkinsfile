@@ -4,8 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'darkxprime/flask-app'
         DOCKER_CREDENTIALS = 'docker-hub-credentials'  // Stored in Jenkins
-        // AWS_HOST = 'your-ec2-ip'
-        // SSH_CREDENTIALS = 'aws-ssh-credentials'  // Stored in Jenkins
     }
 
     stages {
@@ -23,14 +21,13 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat 'docker run --rm %DOCKER_IMAGE% pytest tests/'
+                bat 'docker run --rm -e PYTHONPATH=/app %DOCKER_IMAGE% pytest tests/'
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
                 withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: '']) {
-                    bat 'docker login -u your-dockerhub-username -p your-password'
                     bat 'docker push %DOCKER_IMAGE%'
                 }
             }
@@ -39,6 +36,7 @@ pipeline {
         stage('Deploy to remote server') {
             steps {
                 echo "Deployed Application!"
+                // Uncomment for remote deployment via SSH
                 // sshagent(credentials: [SSH_CREDENTIALS]) {
                 //     bat '''
                 //     ssh -o StrictHostKeyChecking=no ubuntu@%AWS_HOST% <<EOF
@@ -55,10 +53,10 @@ pipeline {
 
     post {
         success {
-            echo "Success!"
+            echo "✅ Success!"
         }
         failure {
-            echo "Failed!"
+            echo "❌ Failed!"
         }
     }
 }
