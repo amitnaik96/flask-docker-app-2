@@ -4,9 +4,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'darkxprime/flask-app'
         DOCKER_CREDENTIALS = 'docker-hub-credentials'  // Stored in Jenkins
-        CODESPACE_HOST = 'your-codespace-id.github.dev'
-        CODESPACE_PORT = '2222'
-        SSH_CREDENTIALS = 'github-codespaces-ssh'  // Stored in Jenkins
+        // AWS_HOST = 'your-ec2-ip'
+        // SSH_CREDENTIALS = 'aws-ssh-credentials'  // Stored in Jenkins
     }
 
     stages {
@@ -37,28 +36,29 @@ pipeline {
             }
         }
 
-        stage('Deploy Application to GitHub Codespaces') {
+        stage('Deploy to remote server') {
             steps {
-                sshagent(credentials: [SSH_CREDENTIALS]) {
-                    bat '''
-                    ssh -p %CODESPACE_PORT% -o StrictHostKeyChecking=no codespace@%CODESPACE_HOST% <<EOF
-                    docker pull %DOCKER_IMAGE%
-                    docker stop flask_app || echo "Container not running"
-                    docker rm flask_app || echo "No container to remove"
-                    docker run -d -p 5000:5000 --name flask_app %DOCKER_IMAGE%
-                    EOF
-                    '''
-                }
+                echo "Deployed Application!"
+                // sshagent(credentials: [SSH_CREDENTIALS]) {
+                //     bat '''
+                //     ssh -o StrictHostKeyChecking=no ubuntu@%AWS_HOST% <<EOF
+                //     docker pull %DOCKER_IMAGE%
+                //     docker stop flask_app || echo "Container not running"
+                //     docker rm flask_app || echo "No container to remove"
+                //     docker run -d -p 5000:5000 --name flask_app %DOCKER_IMAGE%
+                //     EOF
+                //     '''
+                // }
             }
         }
     }
 
     post {
         success {
-            echo "✅ Deployment Successful!"
+            echo "Success!"
         }
         failure {
-            echo "❌ Deployment Failed!"
+            echo "Failed!"
         }
     }
 }
